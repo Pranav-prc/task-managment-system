@@ -1,12 +1,12 @@
 from fastapi import FastAPI
-from app.api.auth import router as auth_router
 from app.api.tasks import router as tasks_router
+from app.api.auth import router as auth_router
 
-app = FastAPI(title="Task Management System")
+from app.db.session import Base, engine
+
+app = FastAPI()
+
+Base.metadata.create_all(bind=engine)
 
 app.include_router(auth_router)
 app.include_router(tasks_router)
-
-@app.get("/")
-def root():
-    return {"message": "Task Management System API is running!"}

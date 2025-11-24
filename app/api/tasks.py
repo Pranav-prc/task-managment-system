@@ -8,8 +8,8 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
-
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
+
 
 
 class TaskCreate(BaseModel):
@@ -17,6 +17,8 @@ class TaskCreate(BaseModel):
     description: Optional[str] = None
     due_date: Optional[datetime] = None
     assigned_to_id: Optional[int] = None
+    status: Optional[TaskStatus] = TaskStatus.todo
+
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
@@ -24,6 +26,7 @@ class TaskUpdate(BaseModel):
     due_date: Optional[datetime] = None
     assigned_to_id: Optional[int] = None
     status: Optional[TaskStatus] = None
+
 
 class TaskResponse(BaseModel):
     id: int
@@ -33,8 +36,9 @@ class TaskResponse(BaseModel):
     due_date: Optional[datetime]
     assigned_to_id: Optional[int]
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
 
 @router.post("/", response_model=TaskResponse)
 def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
@@ -43,7 +47,8 @@ def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
         title=task_data.title,
         description=task_data.description,
         due_date=task_data.due_date,
-        assigned_to_id=task_data.assigned_to_id
+        assigned_to_id=task_data.assigned_to_id,
+        status=task_data.status
     )
 
     db.add(new_task)
@@ -51,6 +56,7 @@ def create_task(task_data: TaskCreate, db: Session = Depends(get_db)):
     db.refresh(new_task)
 
     return new_task
+
 
 @router.get("/", response_model=List[TaskResponse])
 def list_tasks(
@@ -68,6 +74,7 @@ def list_tasks(
 
     return query.all()
 
+
 @router.get("/{task_id}", response_model=TaskResponse)
 def get_task(task_id: int, db: Session = Depends(get_db)):
     task = db.query(Task).filter(Task.id == task_id).first()
@@ -76,6 +83,7 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
         raise HTTPException(404, "Task not found")
 
     return task
+
 
 @router.put("/{task_id}", response_model=TaskResponse)
 def update_task(task_id: int, data: TaskUpdate, db: Session = Depends(get_db)):
@@ -91,6 +99,7 @@ def update_task(task_id: int, data: TaskUpdate, db: Session = Depends(get_db)):
     db.refresh(task)
 
     return task
+
 
 @router.delete("/{task_id}")
 def delete_task(task_id: int, db: Session = Depends(get_db)):

@@ -11,6 +11,7 @@ class TaskStatus(str, enum.Enum):
     in_progress = "in_progress"
     done = "done"
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -21,6 +22,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     tasks = relationship("Task", back_populates="assigned_to")
+
 
 class Task(Base):
     __tablename__ = "tasks"
