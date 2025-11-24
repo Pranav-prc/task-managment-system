@@ -4,6 +4,6 @@ sqlalchemy
 alembic
 passlib[bcrypt]
 python-jose
-psycopg2
+psycopg2-binary
 python-dotenv
 pydantic
